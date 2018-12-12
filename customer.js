@@ -1,5 +1,5 @@
 const mysql = require("mysql");
-const { table } = require("table");
+const Table = require("cli-table");
 
 const connection = mysql.createConnection({
   host: "localhost",
@@ -14,30 +14,21 @@ connection.connect(err => {
   console.log("connected as id " + connection.threadId);
 });
 
+var table = new Table({
+  head: ["ITEM ID", "PRODUCT NAME", "DEPARTMENT", "PRICE", "STOCK QUANTITY"],
+  colWidths: [15, 25, 15, 15, 15]
+});
+
 connection.query("SELECT * FROM products", (err, res) => {
   if (err) throw err;
-  console.log(res);
-  let data;
-  let output;
-
-  function Row(name, department, price, quantity) {
-    this.name = name;
-    this.department = department;
-    this.price = price;
-    this.quantity = quantity;
-  }
-
-  let rows = [];
 
   for (let i in res) {
-    let data = new Row(
-      res[i].product_name,
-      res[i].department_name,
-      res[i].price,
-      res[i].stock_quantity
-    );
-    rows.push(data);
+    let item_id = res[i].item_id;
+    let product_name = res[i].product_name;
+    let department_name = res[i].department_name;
+    let price = res[i].price;
+    let stock = res[i].stock_quantity;
+    table.push([item_id, product_name, department_name, price, stock]);
   }
-
-  console.table([rows[0]]);
+  console.log(table.toString());
 });
