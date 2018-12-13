@@ -7,6 +7,8 @@
   const Table = require("cli-table");
   //Require inquirer
   const inquirer = require("inquirer");
+  //Keeps Track Of How Much The User Spent
+  let grandTotal = 0;
 
   //This establishes our connection to our database using mysql npm
   const connection = mysql.createConnection({
@@ -33,7 +35,7 @@
   //quantity than it let the user know that the amount is too much and prompt them to enter a
   // different amount
 
-  function buyProduct(amount, product_id) {
+  function buyProduct(amount, product_id, price) {
     inquirer
       .prompt([
         {
@@ -50,10 +52,11 @@
         if (amount > res.amount) {
           console.log("You Can Buy This!");
           console.log("Updated Amount!");
+          totalSpent(res.amount, price);
           updateProduct(res.amount, product_id, amount);
         } else {
           console.log("Insufficent Quantity!");
-          buyProduct(amount, product_id);
+          buyProduct(amount, product_id, price);
         }
       });
   }
@@ -71,11 +74,17 @@
         for (let i in res) {
           quantity = res[i].stock_quantity;
           product_id = res[i].item_id;
+          price = res[i].price;
         }
-        buyProduct(quantity, product_id);
+        buyProduct(quantity, product_id, price);
       }
     );
   }
+  // Keeps track of how much the user spent
+  function totalSpent(amount, price) {
+    grandTotal += amount * price;
+  }
+
   // This is actually what updates the stock quantity total in the database,
   // it then runs askAgain to see if the user wants to buy more items.
   function updateProduct(amount, item, product_stock) {
@@ -124,6 +133,7 @@
           grabProducts();
         } else {
           console.log("Thanks For Shopping At Bamazon!");
+          console.log(`Your Grand Total: $${grandTotal}`);
           connection.end();
         }
       });
