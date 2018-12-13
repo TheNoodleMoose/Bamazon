@@ -1,8 +1,14 @@
+// The Whole function is ran inside of a anonymous self calling function,
+// This means there are no global variables
 (function() {
+  //Require mysql
   const mysql = require("mysql");
+  //Require cli-table
   const Table = require("cli-table");
+  //Require inquirer
   const inquirer = require("inquirer");
 
+  //This establishes our connection to our database using mysql npm
   const connection = mysql.createConnection({
     host: "localhost",
     port: 3307,
@@ -10,16 +16,22 @@
     password: "root",
     database: "bamazon_db"
   });
-
+  //When we connect to the database, console log the connection threadId
   connection.connect(err => {
     if (err) throw err;
     console.log("connected as id " + connection.threadId + "\n");
   });
-
+  //This creates a new table for our information to be stored in
   var table = new Table({
     head: ["ITEM ID", "PRODUCT NAME", "DEPARTMENT", "PRICE", "STOCK QUANTITY"],
     colWidths: [15, 25, 15, 15, 15]
   });
+
+  //This it what "buys" the product. It prompts the user to enter how much of the product
+  //they want to buy, and checks to see if their chosen amount if less than the stock quantity.
+  //If it is less than, it will then run updateProduct. If the amount is greater than the stock
+  //quantity than it let the user know that the amount is too much and prompt them to enter a
+  // different amount
 
   function buyProduct(amount, product_id) {
     inquirer
@@ -46,6 +58,10 @@
       });
   }
 
+  // This is how we choose the product the user wants to buy. It takes in the argument product,
+  //which is passed from the promptUser function. Product is the item_ID number and we search that
+  //Item_id and grab the whole object. From that item the user chose we grab out the quantity
+  //and it's ID number. We then run buyProduct with those values.
   function chooseProduct(product) {
     connection.query(
       "SELECT * FROM products WHERE item_id = ?",
@@ -56,16 +72,12 @@
           quantity = res[i].stock_quantity;
           product_id = res[i].item_id;
         }
-        // if (product) {
-        //   buyProduct(quantity, product_id);
-        // } else {
-        //   console.log("Please Select a Valid Item ID");
-        //   promptCustomer();
-        // }
+        buyProduct(quantity, product_id);
       }
     );
   }
-
+  // This is actually what updates the stock quantity total in the database,
+  // it then runs askAgain to see if the user wants to buy more items.
   function updateProduct(amount, item, product_stock) {
     connection.query("UPDATE products SET ? WHERE ?", [
       {
@@ -77,6 +89,7 @@
     ]),
       askAgain();
   }
+  // This is how we find out what item the user wants to buy, and then runs chooseProduct
   function promptCustomer() {
     inquirer
       .prompt([
@@ -95,6 +108,8 @@
       });
   }
 
+  //This asks the user if they want to buy another item. If They do we run grabProducts again,
+  //If not we end the connection.
   function askAgain() {
     inquirer
       .prompt([
@@ -113,7 +128,10 @@
         }
       });
   }
-
+  //This is what starts the whole process. It empties the table and then makes a query to the
+  //database to grab all the data from products. For each what we store each value into its own
+  // variable and then push those values to the Table. We then console log the table and run
+  //promptCustomer
   function grabProducts() {
     table.length = 0;
     connection.query("SELECT * FROM products", (err, res) => {
@@ -132,5 +150,6 @@
       promptCustomer();
     });
   }
+  //This is what starts the whole thing
   grabProducts();
 })();
