@@ -26,7 +26,7 @@
   //This creates a new table for our information to be stored in
   var table = new Table({
     head: ["ITEM ID", "PRODUCT NAME", "DEPARTMENT", "PRICE", "STOCK QUANTITY"],
-    colWidths: [15, 25, 15, 15, 15]
+    colWidths: [15, 25, 15, 15, 17]
   });
 
   //This it what "buys" the product. It prompts the user to enter how much of the product
