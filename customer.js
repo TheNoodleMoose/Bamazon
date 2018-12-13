@@ -50,7 +50,7 @@
       ])
       .then(res => {
         if (amount > res.amount) {
-          console.log("You Can Buy This!");
+          console.log("ITEM BOUGHT");
           console.log("Updated Amount!");
           totalSpent(res.amount, price);
           updateProduct(res.amount, product_id, amount);
